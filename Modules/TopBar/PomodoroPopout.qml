@@ -1,9 +1,9 @@
 import QtQuick
 import QtQuick.Layouts
-import Common
-import Services
-import Widgets
-import Modals
+import qs.Common
+import qs.Services
+import qs.Widgets
+import qs.Modals
 
 StyledRect {
   id: root
@@ -24,11 +24,11 @@ StyledRect {
 
   function getTotalTime() {
     switch (PomodoroService.currentState) {
-      case PomodoroService.StateWork:
+      case PomodoroService.stateWork:
         return PomodoroSettings.workTime * 60;
-      case PomodoroService.StateShortBreak:
+      case PomodoroService.stateShortBreak:
         return PomodoroSettings.shortBreakTime * 60;
-      case PomodoroService.StateLongBreak:
+      case PomodoroService.stateLongBreak:
         return PomodoroSettings.longBreakTime * 60;
       default:
         return PomodoroSettings.workTime * 60;
@@ -37,7 +37,7 @@ StyledRect {
 
   function openSettings() {
     if (!settingsModal) {
-      var component = Qt.createComponent("../Modals/PomodoroSettingsModal.qml")
+      var component = Qt.createComponent("../../Modals/PomodoroSettingsModal.qml")
       if (component.status === Component.Ready) {
         settingsModal = component.createObject(root)
       }
@@ -81,10 +81,10 @@ StyledRect {
             color: Theme.textColor
             icon.name: {
               switch (PomodoroService.currentState) {
-                case PomodoroService.StateWork:
+                case PomodoroService.stateWork:
                   return "brain";
-                case PomodoroService.StateShortBreak:
-                case PomodoroService.StateLongBreak:
+                case PomodoroService.stateShortBreak:
+                case PomodoroService.stateLongBreak:
                   return "coffee";
                 default:
                   return "play";

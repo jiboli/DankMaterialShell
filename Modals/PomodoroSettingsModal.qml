@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
-import Common
-import Widgets
+import qs.Common
+import qs.Widgets
 
 DankModal {
   id: root

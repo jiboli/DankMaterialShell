@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import Common
-import Services
-import Widgets
+import qs.Common
+import qs.Services
+import qs.Widgets
 
 StyledRect {
   id: root
@@ -31,10 +31,10 @@ StyledRect {
       color: Theme.textColor
       icon.name: {
         switch (PomodoroService.currentState) {
-          case PomodoroService.StateWork:
+          case PomodoroService.stateWork:
             return "brain";
-          case PomodoroService.StateShortBreak:
-          case PomodoroService.StateLongBreak:
+          case PomodoroService.stateShortBreak:
+          case PomodoroService.stateLongBreak:
             return "coffee";
           default:
             return "timer-outline";
