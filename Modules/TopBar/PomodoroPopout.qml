@@ -1,0 +1,136 @@
+import QtQuick
+import QtQuick.Layouts
+import Common
+import Services
+import Widgets
+
+StyledRect {
+  id: root
+  width: 280
+  height: 380
+  radius: Theme.cornerRadius
+
+  color: Qt.rgba(Theme.backgroundColor.r, Theme.backgroundColor.g, Theme.backgroundColor.b, 0.95)
+
+  property bool visible: false
+
+  function formatTime(seconds) {
+    var m = Math.floor(seconds / 60)
+    var s = seconds % 60
+    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s)
+  }
+
+  function getTotalTime() {
+    switch (PomodoroService.currentState) {
+      case PomodoroService.StateWork:
+        return PomodoroSettings.workTime * 60;
+      case PomodoroService.StateShortBreak:
+        return PomodoroSettings.shortBreakTime * 60;
+      case PomodoroService.StateLongBreak:
+        return PomodoroSettings.longBreakTime * 60;
+      default:
+        return PomodoroSettings.workTime * 60;
+    }
+  }
+
+  ColumnLayout {
+    anchors.fill: parent
+    anchors.margins: 16
+
+    // Settings Button
+    DankIcon {
+      Layout.alignment: Qt.AlignRight
+      icon.name: "settings"
+      size: 20
+      color: Theme.textColor
+      onClicked: {
+        // TODO: Open PomodoroSettingsModal
+      }
+    }
+
+    DankCircularProgress {
+      id: progressBar
+      Layout.fillWidth: true
+      Layout.preferredHeight: root.width - 60
+      Layout.topMargin: 10
+      strokeWidth: 12
+      color: Theme.accentColor
+      backgroundColor: Qt.rgba(Theme.textColor.r, Theme.textColor.g, Theme.textColor.b, 0.2)
+      value: PomodoroService.remainingTime / getTotalTime()
+
+      content: [
+        ColumnLayout {
+          anchors.centerIn: parent
+
+          DankIcon {
+            id: stateIcon
+            Layout.alignment: Qt.AlignHCenter
+            size: 48
+            color: Theme.textColor
+            icon.name: {
+              switch (PomodoroService.currentState) {
+                case PomodoroService.StateWork:
+                  return "brain";
+                case PomodoroService.StateShortBreak:
+                case PomodoroService.StateLongBreak:
+                  return "coffee";
+                default:
+                  return "play";
+              }
+            }
+          }
+
+          StyledText {
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: 10
+            font.pixelSize: 48
+            font.weight: Font.Light
+            color: Theme.textColor
+            text: formatTime(PomodoroService.remainingTime)
+          }
+        }
+      ]
+    }
+
+    // Control Buttons
+    RowLayout {
+      Layout.fillWidth: true
+      Layout.topMargin: 20
+
+      DankActionButton {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 50
+        icon.name: "replay"
+        onClicked: PomodoroService.reset()
+      }
+
+      DankActionButton {
+        Layout.fillWidth: true
+        Layout.preferredWidth: 80
+        Layout.preferredHeight: 60
+        Layout.leftMargin: 10
+        Layout.rightMargin: 10
+        highlighted: true
+        icon.name: PomodoroService.isRunning ? "pause" : "play"
+        onClicked: PomodoroService.playPause()
+      }
+
+      DankActionButton {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 50
+        icon.name: "skip-forward"
+        onClicked: PomodoroService.skip()
+      }
+    }
+  }
+
+  Connections {
+    target: PomodoroService
+    function onTimeChanged() {
+      progressBar.value = PomodoroService.remainingTime / getTotalTime()
+    }
+    function onStateChanged() {
+      progressBar.value = PomodoroService.remainingTime / getTotalTime()
+    }
+  }
+}
