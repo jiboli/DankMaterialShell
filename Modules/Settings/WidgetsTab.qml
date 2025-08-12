@@ -90,6 +90,12 @@ Item {
       "icon": "privacy_tip",
       "enabled": true
     }, {
+      "id": "pomodoro",
+      "text": "Pomodoro Timer",
+      "description": "A timer to help you focus using the Pomodoro Technique.",
+      "icon": "timer",
+      "enabled": true
+    }, {
       "id": "controlCenterButton",
       "text": "Control Center",
       "description": "Access to system controls and settings",
