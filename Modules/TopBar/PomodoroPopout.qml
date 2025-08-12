@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Common
 import Services
 import Widgets
+import Modals
 
 StyledRect {
   id: root
@@ -13,6 +14,7 @@ StyledRect {
   color: Qt.rgba(Theme.backgroundColor.r, Theme.backgroundColor.g, Theme.backgroundColor.b, 0.95)
 
   property bool visible: false
+  property var settingsModal
 
   function formatTime(seconds) {
     var m = Math.floor(seconds / 60)
@@ -33,6 +35,18 @@ StyledRect {
     }
   }
 
+  function openSettings() {
+    if (!settingsModal) {
+      var component = Qt.createComponent("../Modals/PomodoroSettingsModal.qml")
+      if (component.status === Component.Ready) {
+        settingsModal = component.createObject(root)
+      }
+    }
+    if (settingsModal) {
+      settingsModal.open()
+    }
+  }
+
   ColumnLayout {
     anchors.fill: parent
     anchors.margins: 16
@@ -43,9 +57,7 @@ StyledRect {
       icon.name: "settings"
       size: 20
       color: Theme.textColor
-      onClicked: {
-        // TODO: Open PomodoroSettingsModal
-      }
+      onClicked: openSettings()
     }
 
     DankCircularProgress {
