@@ -99,3 +99,4 @@ go.work.sum
 # .vscode/
 Common/qmldir
 Services/qmldir
+Widgets/qmldir

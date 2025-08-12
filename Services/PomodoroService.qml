@@ -1,7 +1,7 @@
 pragma Singleton
 
 import QtQuick
-import qs.Common
+import "../Common"
 
 Item {
     id: root

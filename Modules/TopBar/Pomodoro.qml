@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
-import qs.Common
-import qs.Services
-import qs.Widgets
+import "../../Common"
+import "../../Services"
+import "../../Widgets"
 
 StyledRect {
   id: root
