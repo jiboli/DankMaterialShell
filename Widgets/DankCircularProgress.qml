@@ -3,8 +3,7 @@ import QtQuick 2.15
 Item {
   id: root
 
-  width: 200
-  height: 200
+  // Removed hardcoded width and height to allow layout properties to take effect
 
   property real value: 0.0 // 0.0 to 1.0
   property color color: "#ffffff"

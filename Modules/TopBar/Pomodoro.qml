@@ -39,7 +39,7 @@ StyledRect {
             name: {
                 switch (PomodoroService.currentState) {
                 case PomodoroService.stateWork:
-                    return "brain";
+                    return "psychology";
                 case PomodoroService.stateShortBreak:
                 case PomodoroService.stateLongBreak:
                     return "coffee";

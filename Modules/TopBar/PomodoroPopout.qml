@@ -19,11 +19,11 @@ PanelWindow {
     property var settingsModal
 
     function setTriggerPosition(x, y, width, section, screen) {
-        triggerX = x
-        triggerY = y
-        triggerWidth = width
-        triggerSection = section
-        triggerScreen = screen
+        triggerX = x;
+        triggerY = y;
+        triggerWidth = width;
+        triggerSection = section;
+        triggerScreen = screen;
     }
 
     visible: pomodoroPopoutVisible
@@ -45,10 +45,9 @@ PanelWindow {
     MouseArea {
         anchors.fill: parent
         onClicked: function (mouse) {
-            var localPos = mapToItem(contentLoader, mouse.x, mouse.y)
-            if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0
-                || localPos.y > contentLoader.height)
-                pomodoroPopoutVisible = false
+            var localPos = mapToItem(contentLoader, mouse.x, mouse.y);
+            if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0 || localPos.y > contentLoader.height)
+                pomodoroPopoutVisible = false;
         }
     }
 
@@ -60,17 +59,17 @@ PanelWindow {
         readonly property real targetWidth: Math.min(280, screenWidth - Theme.spacingL * 2)
         readonly property real targetHeight: Math.min(380, screenHeight - Theme.barHeight - Theme.spacingS * 2)
         readonly property real calculatedX: {
-            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2)
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2);
             if (centerX >= Theme.spacingM && centerX + targetWidth <= screenWidth - Theme.spacingM) {
-                return centerX
+                return centerX;
             }
             if (centerX < Theme.spacingM) {
-                return Theme.spacingM
+                return Theme.spacingM;
             }
             if (centerX + targetWidth > screenWidth - Theme.spacingM) {
-                return screenWidth - targetWidth - Theme.spacingM
+                return screenWidth - targetWidth - Theme.spacingM;
             }
-            return centerX
+            return centerX;
         }
 
         asynchronous: true
@@ -108,12 +107,12 @@ PanelWindow {
             focus: true
             Component.onCompleted: {
                 if (pomodoroPopoutVisible)
-                    forceActiveFocus()
+                    forceActiveFocus();
             }
             Keys.onPressed: function (event) {
                 if (event.key === Qt.Key_Escape) {
-                    pomodoroPopoutVisible = false
-                    event.accepted = true
+                    pomodoroPopoutVisible = false;
+                    event.accepted = true;
                 }
             }
 
@@ -121,8 +120,8 @@ PanelWindow {
                 function onPomodoroPopoutVisibleChanged() {
                     if (pomodoroPopoutVisible)
                         Qt.callLater(function () {
-                            parent.forceActiveFocus()
-                        })
+                            parent.forceActiveFocus();
+                        });
                 }
                 target: root
             }
@@ -179,8 +178,9 @@ PanelWindow {
 
                 DankCircularProgress {
                     id: progressBar
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: root.width - 100
+                    Layout.preferredWidth: 174
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.preferredHeight: progressBar.width
                     Layout.topMargin: 10
                     strokeWidth: 12
                     color: Theme.primary
@@ -189,22 +189,28 @@ PanelWindow {
 
                     content: [
                         ColumnLayout {
-                            anchors.centerIn: parent
+                            width: parent.width
+                            height: parent.height
+                            spacing: 10
+
+                            Item {
+                                Layout.fillHeight: true
+                            }
 
                             DankIcon {
                                 id: stateIcon
                                 Layout.alignment: Qt.AlignHCenter
                                 size: 48
-                                color: Theme.surfaceText
+                                color: Theme.primary
                                 name: {
                                     switch (PomodoroService.currentState) {
                                     case PomodoroService.stateWork:
-                                        return "brain";
+                                        return "psychology";
                                     case PomodoroService.stateShortBreak:
                                     case PomodoroService.stateLongBreak:
                                         return "coffee";
                                     default:
-                                        return "play";
+                                        return "psychology";
                                     }
                                 }
                             }
@@ -212,11 +218,14 @@ PanelWindow {
                             StyledText {
                                 id: timeText
                                 Layout.alignment: Qt.AlignHCenter
-                                Layout.topMargin: 10
-                                font.pixelSize: 48
+                                font.pixelSize: 24
                                 font.weight: Font.Light
                                 color: Theme.surfaceText
                                 text: PomodoroService.formatTime(PomodoroService.remainingTime)
+                            }
+
+                            Item {
+                                Layout.fillHeight: true
                             }
                         }
                     ]
@@ -240,14 +249,14 @@ PanelWindow {
                         Layout.preferredHeight: 60
                         Layout.leftMargin: 10
                         Layout.rightMargin: 10
-                        iconName: PomodoroService.isRunning ? "pause" : "play"
+                        iconName: PomodoroService.isRunning ? "pause" : "play_arrow"
                         onClicked: PomodoroService.playPause()
                     }
 
                     DankActionButton {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 50
-                        iconName: "skip-forward"
+                        iconName: "skip_next"
                         onClicked: PomodoroService.skip()
                     }
                 }
