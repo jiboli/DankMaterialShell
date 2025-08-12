@@ -1,91 +1,66 @@
 import QtQuick
 import QtQuick.Layouts
-import "../Common"
-import "../Widgets"
+import qs.Common
+import qs.Widgets
 
 DankModal {
-  id: root
+    id: root
 
-  title: "Pomodoro Settings"
+    title: "Pomodoro Settings"
 
-  content: [
-    ColumnLayout {
-      width: parent.width
-      spacing: 15
-
-      // Helper component for each setting row
-      Component {
-        id: settingRow
-        RowLayout {
-          property alias label: label.text
-          property alias value: textField.text
-          property alias onAccepted: textField.onAccepted
-
-          StyledText {
-            id: label
-            Layout.fillWidth: true
-            text: "Setting"
-            verticalAlignment: Text.AlignVCenter
-          }
-          DankTextField {
-            id: textField
-            Layout.preferredWidth: 80
-            horizontalAlignment: Text.AlignHCenter
-            validator: IntValidator { bottom: 1; top: 180; }
-          }
+    property var settingsModel: [
+        {
+            label: "Work Duration (min)",
+            getValue: () => PomodoroSettings.workTime,
+            setValue: (value) => PomodoroSettings.setWorkTime(value)
+        },
+        {
+            label: "Short Break (min)",
+            getValue: () => PomodoroSettings.shortBreakTime,
+            setValue: (value) => PomodoroSettings.setShortBreakTime(value)
+        },
+        {
+            label: "Long Break (min)",
+            getValue: () => PomodoroSettings.longBreakTime,
+            setValue: (value) => PomodoroSettings.setLongBreakTime(value)
+        },
+        {
+            label: "Sessions for Long Break",
+            getValue: () => PomodoroSettings.sessionsForLongBreak,
+            setValue: (value) => PomodoroSettings.setSessionsForLongBreak(value)
+        },
+        {
+            label: "Daily Target (sessions)",
+            getValue: () => PomodoroSettings.targetSessions,
+            setValue: (value) => PomodoroSettings.setTargetSessions(value)
         }
-      }
+    ]
 
-      // Instantiate rows for each setting
-      Loader {
-        Layout.fillWidth: true
-        sourceComponent: settingRow
-        onLoaded: {
-          item.label = "Work Duration (min)"
-          item.value = PomodoroSettings.workTime
-          item.onAccepted = () => PomodoroSettings.setWorkTime(parseInt(item.value))
-        }
-      }
+    content: [
+        ColumnLayout {
+            width: parent.width
+            spacing: 15
 
-      Loader {
-        Layout.fillWidth: true
-        sourceComponent: settingRow
-        onLoaded: {
-          item.label = "Short Break (min)"
-          item.value = PomodoroSettings.shortBreakTime
-          item.onAccepted = () => PomodoroSettings.setShortBreakTime(parseInt(item.value))
-        }
-      }
+            Repeater {
+                model: settingsModel
 
-      Loader {
-        Layout.fillWidth: true
-        sourceComponent: settingRow
-        onLoaded: {
-          item.label = "Long Break (min)"
-          item.value = PomodoroSettings.longBreakTime
-          item.onAccepted = () => PomodoroSettings.setLongBreakTime(parseInt(item.value))
-        }
-      }
+                RowLayout {
+                    width: parent.width
 
-      Loader {
-        Layout.fillWidth: true
-        sourceComponent: settingRow
-        onLoaded: {
-          item.label = "Sessions for Long Break"
-          item.value = PomodoroSettings.sessionsForLongBreak
-          item.onAccepted = () => PomodoroSettings.setSessionsForLongBreak(parseInt(item.value))
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: modelData.label
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    DankTextField {
+                        Layout.preferredWidth: 80
+                        text: modelData.getValue()
+                        horizontalAlignment: Text.AlignHCenter
+                        validator: IntValidator { bottom: 1; top: 180; }
+                        onAccepted: modelData.setValue(parseInt(text))
+                    }
+                }
+            }
         }
-      }
-
-      Loader {
-        Layout.fillWidth: true
-        sourceComponent: settingRow
-        onLoaded: {
-          item.label = "Daily Target (sessions)"
-          item.value = PomodoroSettings.targetSessions
-          item.onAccepted = () => PomodoroSettings.setTargetSessions(parseInt(item.value))
-        }
-      }
-    }
-  ]
+    ]
 }

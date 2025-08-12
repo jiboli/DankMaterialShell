@@ -1,148 +1,268 @@
 import QtQuick
 import QtQuick.Layouts
-import "../../Common"
-import "../../Services"
-import "../../Widgets"
-import "../../Modals"
+import Quickshell
+import Quickshell.Wayland
+import qs.Common
+import qs.Services
+import qs.Widgets
+import qs.Modals
 
-StyledRect {
-  id: root
-  width: 280
-  height: 380
-  radius: Theme.cornerRadius
+PanelWindow {
+    id: root
 
-  color: Qt.rgba(Theme.backgroundColor.r, Theme.backgroundColor.g, Theme.backgroundColor.b, 0.95)
+    property bool pomodoroPopoutVisible: false
+    property real triggerX: Screen.width / 2 - 140
+    property real triggerY: Theme.barHeight + Theme.spacingS
+    property real triggerWidth: 100
+    property string triggerSection: "left"
+    property var triggerScreen: null
+    property var settingsModal
 
-  property bool visible: false
-  property var settingsModal
-
-  function formatTime(seconds) {
-    var m = Math.floor(seconds / 60)
-    var s = seconds % 60
-    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s)
-  }
-
-  function getTotalTime() {
-    switch (PomodoroService.currentState) {
-      case PomodoroService.stateWork:
-        return PomodoroSettings.workTime * 60;
-      case PomodoroService.stateShortBreak:
-        return PomodoroSettings.shortBreakTime * 60;
-      case PomodoroService.stateLongBreak:
-        return PomodoroSettings.longBreakTime * 60;
-      default:
-        return PomodoroSettings.workTime * 60;
-    }
-  }
-
-  function openSettings() {
-    if (!settingsModal) {
-      var component = Qt.createComponent("../../Modals/PomodoroSettingsModal.qml")
-      if (component.status === Component.Ready) {
-        settingsModal = component.createObject(root)
-      }
-    }
-    if (settingsModal) {
-      settingsModal.open()
-    }
-  }
-
-  ColumnLayout {
-    anchors.fill: parent
-    anchors.margins: 16
-
-    // Settings Button
-    DankIcon {
-      Layout.alignment: Qt.AlignRight
-      icon.name: "settings"
-      size: 20
-      color: Theme.textColor
-      onClicked: openSettings()
+    function setTriggerPosition(x, y, width, section, screen) {
+        triggerX = x
+        triggerY = y
+        triggerWidth = width
+        triggerSection = section
+        triggerScreen = screen
     }
 
-    DankCircularProgress {
-      id: progressBar
-      Layout.fillWidth: true
-      Layout.preferredHeight: root.width - 60
-      Layout.topMargin: 10
-      strokeWidth: 12
-      color: Theme.accentColor
-      backgroundColor: Qt.rgba(Theme.textColor.r, Theme.textColor.g, Theme.textColor.b, 0.2)
-      value: PomodoroService.remainingTime / getTotalTime()
+    visible: pomodoroPopoutVisible
+    screen: triggerScreen
+    implicitWidth: 400
+    implicitHeight: 300
+    WlrLayershell.layer: WlrLayershell.Overlay
+    WlrLayershell.exclusiveZone: -1
+    WlrLayershell.keyboardFocus: pomodoroPopoutVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    color: "transparent"
 
-      content: [
-        ColumnLayout {
-          anchors.centerIn: parent
+    anchors {
+        top: true
+        left: true
+        right: true
+        bottom: true
+    }
 
-          DankIcon {
-            id: stateIcon
-            Layout.alignment: Qt.AlignHCenter
-            size: 48
-            color: Theme.textColor
-            icon.name: {
-              switch (PomodoroService.currentState) {
-                case PomodoroService.stateWork:
-                  return "brain";
-                case PomodoroService.stateShortBreak:
-                case PomodoroService.stateLongBreak:
-                  return "coffee";
-                default:
-                  return "play";
-              }
-            }
-          }
-
-          StyledText {
-            Layout.alignment: Qt.AlignHCenter
-            Layout.topMargin: 10
-            font.pixelSize: 48
-            font.weight: Font.Light
-            color: Theme.textColor
-            text: formatTime(PomodoroService.remainingTime)
-          }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: function (mouse) {
+            var localPos = mapToItem(contentLoader, mouse.x, mouse.y)
+            if (localPos.x < 0 || localPos.x > contentLoader.width || localPos.y < 0
+                || localPos.y > contentLoader.height)
+                pomodoroPopoutVisible = false
         }
-      ]
     }
 
-    // Control Buttons
-    RowLayout {
-      Layout.fillWidth: true
-      Layout.topMargin: 20
+    Loader {
+        id: contentLoader
 
-      DankActionButton {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 50
-        icon.name: "replay"
-        onClicked: PomodoroService.reset()
-      }
+        readonly property real screenWidth: root.screen ? root.screen.width : Screen.width
+        readonly property real screenHeight: root.screen ? root.screen.height : Screen.height
+        readonly property real targetWidth: Math.min(280, screenWidth - Theme.spacingL * 2)
+        readonly property real targetHeight: Math.min(380, screenHeight - Theme.barHeight - Theme.spacingS * 2)
+        readonly property real calculatedX: {
+            var centerX = root.triggerX + (root.triggerWidth / 2) - (targetWidth / 2)
+            if (centerX >= Theme.spacingM && centerX + targetWidth <= screenWidth - Theme.spacingM) {
+                return centerX
+            }
+            if (centerX < Theme.spacingM) {
+                return Theme.spacingM
+            }
+            if (centerX + targetWidth > screenWidth - Theme.spacingM) {
+                return screenWidth - targetWidth - Theme.spacingM
+            }
+            return centerX
+        }
 
-      DankActionButton {
-        Layout.fillWidth: true
-        Layout.preferredWidth: 80
-        Layout.preferredHeight: 60
-        Layout.leftMargin: 10
-        Layout.rightMargin: 10
-        highlighted: true
-        icon.name: PomodoroService.isRunning ? "pause" : "play"
-        onClicked: PomodoroService.playPause()
-      }
+        asynchronous: true
+        active: pomodoroPopoutVisible
+        width: targetWidth
+        height: targetHeight
+        x: calculatedX
+        y: root.triggerY
+        opacity: pomodoroPopoutVisible ? 1 : 0
+        scale: pomodoroPopoutVisible ? 1 : 0.9
 
-      DankActionButton {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 50
-        icon.name: "skip-forward"
-        onClicked: PomodoroService.skip()
-      }
+        Behavior on opacity {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+
+        Behavior on scale {
+            NumberAnimation {
+                duration: Anims.durMed
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: Anims.emphasized
+            }
+        }
+
+        sourceComponent: Rectangle {
+            color: Theme.popupBackground()
+            radius: Theme.cornerRadius
+            border.color: Theme.outlineMedium
+            border.width: 1
+            antialiasing: true
+            smooth: true
+            focus: true
+            Component.onCompleted: {
+                if (pomodoroPopoutVisible)
+                    forceActiveFocus()
+            }
+            Keys.onPressed: function (event) {
+                if (event.key === Qt.Key_Escape) {
+                    pomodoroPopoutVisible = false
+                    event.accepted = true
+                }
+            }
+
+            Connections {
+                function onPomodoroPopoutVisibleChanged() {
+                    if (pomodoroPopoutVisible)
+                        Qt.callLater(function () {
+                            parent.forceActiveFocus()
+                        })
+                }
+                target: root
+            }
+
+            function getTotalTime() {
+                switch (PomodoroService.currentState) {
+                case PomodoroService.stateWork:
+                    return PomodoroSettings.workTime * 60;
+                case PomodoroService.stateShortBreak:
+                    return PomodoroSettings.shortBreakTime * 60;
+                case PomodoroService.stateLongBreak:
+                    return PomodoroSettings.longBreakTime * 60;
+                default:
+                    return PomodoroSettings.workTime * 60;
+                }
+            }
+
+            function openSettings() {
+                if (!settingsModal) {
+                    var component = Qt.createComponent("../../Modals/PomodoroSettingsModal.qml");
+                    if (component.status === Component.Ready) {
+                        settingsModal = component.createObject(root);
+                    }
+                }
+                if (settingsModal) {
+                    settingsModal.open();
+                }
+            }
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 16
+
+                // Settings Button
+                Item {
+                    Layout.alignment: Qt.AlignRight
+                    width: 30
+                    height: 30
+
+                    DankIcon {
+                        id: settingsIcon
+                        anchors.centerIn: parent
+                        name: "settings"
+                        size: 20
+                        color: Theme.surfaceText
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: openSettings()
+                    }
+                }
+
+                DankCircularProgress {
+                    id: progressBar
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: root.width - 100
+                    Layout.topMargin: 10
+                    strokeWidth: 12
+                    color: Theme.primary
+                    backgroundColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                    value: PomodoroService.remainingTime > 0 ? (PomodoroService.remainingTime / getTotalTime()) : 0
+
+                    content: [
+                        ColumnLayout {
+                            anchors.centerIn: parent
+
+                            DankIcon {
+                                id: stateIcon
+                                Layout.alignment: Qt.AlignHCenter
+                                size: 48
+                                color: Theme.surfaceText
+                                name: {
+                                    switch (PomodoroService.currentState) {
+                                    case PomodoroService.stateWork:
+                                        return "brain";
+                                    case PomodoroService.stateShortBreak:
+                                    case PomodoroService.stateLongBreak:
+                                        return "coffee";
+                                    default:
+                                        return "play";
+                                    }
+                                }
+                            }
+
+                            StyledText {
+                                id: timeText
+                                Layout.alignment: Qt.AlignHCenter
+                                Layout.topMargin: 10
+                                font.pixelSize: 48
+                                font.weight: Font.Light
+                                color: Theme.surfaceText
+                                text: PomodoroService.formatTime(PomodoroService.remainingTime)
+                            }
+                        }
+                    ]
+                }
+
+                // Control Buttons
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.topMargin: 20
+
+                    DankActionButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 50
+                        iconName: "replay"
+                        onClicked: PomodoroService.reset()
+                    }
+
+                    DankActionButton {
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 80
+                        Layout.preferredHeight: 60
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        iconName: PomodoroService.isRunning ? "pause" : "play"
+                        onClicked: PomodoroService.playPause()
+                    }
+
+                    DankActionButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 50
+                        iconName: "skip-forward"
+                        onClicked: PomodoroService.skip()
+                    }
+                }
+            }
+
+            Connections {
+                target: PomodoroService
+                function onPomodoroTimeChanged() {
+                    progressBar.value = PomodoroService.remainingTime > 0 ? (PomodoroService.remainingTime / getTotalTime()) : 0;
+                    timeText.text = PomodoroService.formatTime(PomodoroService.remainingTime);
+                }
+                function onPomodoroStateChanged() {
+                    progressBar.value = PomodoroService.remainingTime > 0 ? (PomodoroService.remainingTime / getTotalTime()) : 0;
+                }
+            }
+        }
     }
-  }
-
-  Connections {
-    target: PomodoroService
-    function onTimeChanged() {
-      progressBar.value = PomodoroService.remainingTime / getTotalTime()
-    }
-    function onStateChanged() {
-      progressBar.value = PomodoroService.remainingTime / getTotalTime()
-    }
-  }
 }

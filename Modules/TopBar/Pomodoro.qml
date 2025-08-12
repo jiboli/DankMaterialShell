@@ -1,80 +1,89 @@
 import QtQuick
 import QtQuick.Layouts
-import "../../Common"
-import "../../Services"
-import "../../Widgets"
+import qs.Common
+import qs.Services
+import qs.Widgets
 
 StyledRect {
-  id: root
+    id: root
 
-  implicitWidth: layout.implicitWidth + 16
-  implicitHeight: 40
-  color: "transparent"
-  radius: Theme.cornerRadius
+    property bool pomodoroPopupVisible: false
+    property string section: "left" // or "right", depending on layout
+    property var popupTarget: null
+    property var parentScreen: null
 
-  property var popout
+    signal togglePomodoroPopup
 
-  function formatTime(seconds) {
-    var m = Math.floor(seconds / 60)
-    var s = seconds % 60
-    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s)
-  }
+    implicitWidth: layout.implicitWidth + 16
+    implicitHeight: 30
+    radius: Theme.cornerRadius
 
-  RowLayout {
-    id: layout
-    anchors.centerIn: parent
-    spacing: 6
+    color: mouseArea.containsMouse || pomodoroPopupVisible ? Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.1) : Qt.rgba(Theme.surfaceTextHover.r, Theme.surfaceTextHover.g, Theme.surfaceTextHover.b, Theme.surfaceTextHover.a * Theme.widgetTransparency)
 
-    DankIcon {
-      id: stateIcon
-      size: 18
-      color: Theme.textColor
-      icon.name: {
-        switch (PomodoroService.currentState) {
-          case PomodoroService.stateWork:
-            return "brain";
-          case PomodoroService.stateShortBreak:
-          case PomodoroService.stateLongBreak:
-            return "coffee";
-          default:
-            return "timer-outline";
+
+    Behavior on color {
+        ColorAnimation {
+            duration: 150
         }
-      }
     }
 
-    StyledText {
-      id: timeLabel
-      font.pixelSize: 14
-      color: Theme.textColor
-      text: formatTime(PomodoroService.remainingTime)
-    }
-  }
+    RowLayout {
+        id: layout
+        anchors.centerIn: parent
+        spacing: 6
 
-  MouseArea {
-    anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
-    onClicked: {
-      if (!popout) {
-        var component = Qt.createComponent("PomodoroPopout.qml")
-        if (component.status === Component.Ready) {
-          popout = component.createObject(root.parent, { "visible": true })
-        } else {
-          console.error("Failed to create PomodoroPopout:", component.errorString())
-          return
+        DankIcon {
+            id: stateIcon
+            size: 18
+            color: Theme.primary
+            name: {
+                switch (PomodoroService.currentState) {
+                case PomodoroService.stateWork:
+                    return "brain";
+                case PomodoroService.stateShortBreak:
+                case PomodoroService.stateLongBreak:
+                    return "coffee";
+                default:
+                    return "timer";
+                }
+            }
         }
-      }
-      popout.visible = !popout.visible
-    }
-  }
 
-  Connections {
-    target: PomodoroService
-    function onTimeChanged() {
-      timeLabel.text = formatTime(PomodoroService.remainingTime)
+        StyledText {
+            id: timeLabel
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.surfaceText
+            font.weight: Font.Medium
+            text: PomodoroService.formatTime(PomodoroService.remainingTime)
+        }
     }
-    function onStateChanged() {
-      // Icon is already bound, but might need to trigger redraw if bindings are not live
-      stateIcon.icon.name = stateIcon.icon.name
+
+    MouseArea {
+        id: mouseArea
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+            if (popupTarget && popupTarget.setTriggerPosition) {
+                var globalPos = mapToGlobal(0, 0)
+                var currentScreen = parentScreen || Screen
+                var screenX = currentScreen.x || 0
+                var relativeX = globalPos.x - screenX
+                popupTarget.setTriggerPosition(relativeX,
+                                               Theme.barHeight + Theme.spacingXS,
+                                               width, section, currentScreen)
+            }
+            togglePomodoroPopup()
+        }
     }
-  }
+
+    Connections {
+        target: PomodoroService
+        function onPomodoroTimeChanged() {
+            timeLabel.text = PomodoroService.formatTime(PomodoroService.remainingTime);
+        }
+        function onStateChanged() {
+            stateIcon.name = stateIcon.name;
+        }
+    }
 }

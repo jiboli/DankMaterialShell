@@ -1,7 +1,7 @@
 pragma Singleton
 
 import QtQuick
-import "../Common"
+import qs.Common
 
 Item {
     id: root
@@ -17,9 +17,9 @@ Item {
     property int currentSession: 0
     property bool isRunning: false
 
-    signal stateChanged
-    signal timeChanged
-    signal sessionChanged
+    signal pomodoroStateChanged
+    signal pomodoroTimeChanged
+    signal pomodoroSessionChanged
 
     Timer {
         id: timer
@@ -30,7 +30,7 @@ Item {
         onTriggered: {
             if (remainingTime > 0) {
                 remainingTime--;
-                timeChanged();
+                pomodoroTimeChanged();
             } else {
                 nextState();
             }
@@ -54,9 +54,9 @@ Item {
         currentState = stateIdle;
         currentSession = 0;
         remainingTime = PomodoroSettings.workTime * 60;
-        stateChanged();
-        timeChanged();
-        sessionChanged();
+        pomodoroStateChanged();
+        pomodoroTimeChanged();
+        pomodoroSessionChanged();
     }
 
     function startFirstSession() {
@@ -64,9 +64,9 @@ Item {
         currentState = stateWork;
         currentSession = 1;
         remainingTime = PomodoroSettings.workTime * 60;
-        stateChanged();
-        timeChanged();
-        sessionChanged();
+        pomodoroStateChanged();
+        pomodoroTimeChanged();
+        pomodoroSessionChanged();
     }
 
     function nextState(skipped = false) {
@@ -85,11 +85,11 @@ Item {
             currentState = stateWork;
             currentSession++;
             remainingTime = PomodoroSettings.workTime * 60;
-            sessionChanged();
+            pomodoroSessionChanged();
         }
 
-        stateChanged();
-        timeChanged();
+        pomodoroStateChanged();
+        pomodoroTimeChanged();
 
         // Automatically start the next session timer
         isRunning = true;
@@ -101,20 +101,26 @@ Item {
         function onWorkTimeChanged() {
             if (currentState === stateWork || currentState === stateIdle) {
                 remainingTime = PomodoroSettings.workTime * 60;
-                timeChanged();
+                pomodoroTimeChanged();
             }
         }
         function onShortBreakTimeChanged() {
             if (currentState === stateShortBreak) {
                 remainingTime = PomodoroSettings.shortBreakTime * 60;
-                timeChanged();
+                pomodoroTimeChanged();
             }
         }
         function onLongBreakTimeChanged() {
             if (currentState === stateLongBreak) {
                 remainingTime = PomodoroSettings.longBreakTime * 60;
-                timeChanged();
+                pomodoroTimeChanged();
             }
         }
+    }
+
+    function formatTime(seconds) {
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     }
 }
