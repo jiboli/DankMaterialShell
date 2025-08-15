@@ -47,6 +47,32 @@ PanelWindow {
 
         // Configure GPU temperature monitoring based on widget configuration
         updateGpuTempConfig();
+
+        // Force widget initialization after brief delay to ensure services are loaded
+        Qt.callLater(() => {
+            Qt.callLater(() => {
+                forceWidgetRefresh();
+            });
+        });
+    }
+
+    function forceWidgetRefresh() {
+        // Force reload of all widget sections to handle race condition on desktop hardware
+        if (leftSection)
+            leftSection.visible = false;
+        if (centerSection)
+            centerSection.visible = false;
+        if (rightSection)
+            rightSection.visible = false;
+
+        Qt.callLater(() => {
+            if (leftSection)
+                leftSection.visible = true;
+            if (centerSection)
+                centerSection.visible = true;
+            if (rightSection)
+                rightSection.visible = true;
+        });
     }
 
     function updateGpuTempConfig() {
@@ -357,7 +383,7 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
+                                asynchronous: false
                             }
                         }
                     }
@@ -476,7 +502,7 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
+                                asynchronous: false
 
                                 onLoaded: {
                                     if (item) {
@@ -523,7 +549,7 @@ PanelWindow {
                                 active: topBarContent.getWidgetVisible(model.widgetId)
                                 sourceComponent: topBarContent.getWidgetComponent(model.widgetId)
                                 opacity: topBarContent.getWidgetEnabled(model.enabled) ? 1 : 0
-                                asynchronous: true
+                                asynchronous: false
                             }
                         }
                     }
@@ -571,7 +597,7 @@ PanelWindow {
                         id: launcherButtonComponent
 
                         LauncherButton {
-                            isActive: appDrawerPopout ? appDrawerPopout.isVisible : false
+                            isActive: appDrawerLoader.item ? appDrawerLoader.item.isVisible : false
                             section: {
                                 if (parent && parent.parent) {
                                     if (parent.parent === leftSection)
@@ -583,11 +609,12 @@ PanelWindow {
                                 }
                                 return "left";
                             }
-                            popupTarget: appDrawerPopout
+                            popupTarget: appDrawerLoader.item
                             parentScreen: root.screen
                             onClicked: {
-                                if (appDrawerPopout)
-                                    appDrawerPopout.toggle();
+                                appDrawerLoader.active = true;
+                                if (appDrawerLoader.item)
+                                    appDrawerLoader.item.toggle();
                             }
                         }
                     }
@@ -623,10 +650,16 @@ PanelWindow {
                                     return "center";
                                 return "center";
                             }
-                            popupTarget: centcomPopout
+                            popupTarget: {
+                                centcomPopoutLoader.active = true;
+                                return centcomPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             onClockClicked: {
-                                centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                                centcomPopoutLoader.active = true;
+                                if (centcomPopoutLoader.item) {
+                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible;
+                                }
                             }
                         }
                     }
@@ -645,10 +678,16 @@ PanelWindow {
                                     return "center";
                                 return "center";
                             }
-                            popupTarget: centcomPopout
+                            popupTarget: {
+                                centcomPopoutLoader.active = true;
+                                return centcomPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             onClicked: {
-                                centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                                centcomPopoutLoader.active = true;
+                                if (centcomPopoutLoader.item) {
+                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible;
+                                }
                             }
                         }
                     }
@@ -666,10 +705,16 @@ PanelWindow {
                                     return "center";
                                 return "center";
                             }
-                            popupTarget: centcomPopout
+                            popupTarget: {
+                                centcomPopoutLoader.active = true;
+                                return centcomPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             onClicked: {
-                                centcomPopout.calendarVisible = !centcomPopout.calendarVisible;
+                                centcomPopoutLoader.active = true;
+                                if (centcomPopoutLoader.item) {
+                                    centcomPopoutLoader.item.calendarVisible = !centcomPopoutLoader.item.calendarVisible;
+                                }
                             }
                         }
                     }
@@ -713,10 +758,15 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: processListPopout
+                            popupTarget: {
+                                processListPopoutLoader.active = true;
+                                return processListPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                return processListPopout.toggle();
+                                processListPopoutLoader.active = true;
+                                if (processListPopoutLoader.item)
+                                    return processListPopoutLoader.item.toggle();
                             }
                         }
                     }
@@ -734,10 +784,15 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: processListPopout
+                            popupTarget: {
+                                processListPopoutLoader.active = true;
+                                return processListPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                return processListPopout.toggle();
+                                processListPopoutLoader.active = true;
+                                if (processListPopoutLoader.item)
+                                    return processListPopoutLoader.item.toggle();
                             }
                         }
                     }
@@ -755,10 +810,15 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: processListPopout
+                            popupTarget: {
+                                processListPopoutLoader.active = true;
+                                return processListPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             toggleProcessList: () => {
-                                return processListPopout.toggle();
+                                processListPopoutLoader.active = true;
+                                if (processListPopoutLoader.item)
+                                    return processListPopoutLoader.item.toggle();
                             }
                         }
                     }
@@ -776,11 +836,16 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: processListPopout
+                            popupTarget: {
+                                processListPopoutLoader.active = true;
+                                return processListPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             widgetData: parent.widgetData
                             toggleProcessList: () => {
-                                return processListPopout.toggle();
+                                processListPopoutLoader.active = true;
+                                if (processListPopoutLoader.item)
+                                    return processListPopoutLoader.item.toggle();
                             }
                         }
                     }
@@ -790,7 +855,7 @@ PanelWindow {
 
                         NotificationCenterButton {
                             hasUnread: root.notificationCount > 0
-                            isActive: notificationCenter.notificationHistoryVisible
+                            isActive: notificationCenterLoader.item ? notificationCenterLoader.item.notificationHistoryVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left";
@@ -800,10 +865,16 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: notificationCenter
+                            popupTarget: {
+                                notificationCenterLoader.active = true;
+                                return notificationCenterLoader.item;
+                            }
                             parentScreen: root.screen
                             onClicked: {
-                                notificationCenter.notificationHistoryVisible = !notificationCenter.notificationHistoryVisible;
+                                notificationCenterLoader.active = true;
+                                if (notificationCenterLoader.item) {
+                                    notificationCenterLoader.item.notificationHistoryVisible = !notificationCenterLoader.item.notificationHistoryVisible;
+                                }
                             }
                         }
                     }
@@ -812,7 +883,7 @@ PanelWindow {
                         id: batteryComponent
 
                         Battery {
-                            batteryPopupVisible: batteryPopout.batteryPopupVisible
+                            batteryPopupVisible: batteryPopoutLoader.item ? batteryPopoutLoader.item.batteryPopupVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left";
@@ -822,10 +893,16 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: batteryPopout
+                            popupTarget: {
+                                batteryPopoutLoader.active = true;
+                                return batteryPopoutLoader.item;
+                            }
                             parentScreen: root.screen
                             onToggleBatteryPopup: {
-                                batteryPopout.batteryPopupVisible = !batteryPopout.batteryPopupVisible;
+                                batteryPopoutLoader.active = true;
+                                if (batteryPopoutLoader.item) {
+                                    batteryPopoutLoader.item.batteryPopupVisible = !batteryPopoutLoader.item.batteryPopupVisible;
+                                }
                             }
                         }
                     }
@@ -834,7 +911,7 @@ PanelWindow {
                         id: controlCenterButtonComponent
 
                         ControlCenterButton {
-                            isActive: controlCenterPopout.controlCenterVisible
+                            isActive: controlCenterLoader.item ? controlCenterLoader.item.controlCenterVisible : false
                             section: {
                                 if (parent && parent.parent === leftSection)
                                     return "left";
@@ -844,14 +921,20 @@ PanelWindow {
                                     return "center";
                                 return "right";
                             }
-                            popupTarget: controlCenterPopout
+                            popupTarget: {
+                                controlCenterLoader.active = true;
+                                return controlCenterLoader.item;
+                            }
                             parentScreen: root.screen
                             onClicked: {
-                                controlCenterPopout.triggerScreen = root.screen;
-                                controlCenterPopout.controlCenterVisible = !controlCenterPopout.controlCenterVisible;
-                                if (controlCenterPopout.controlCenterVisible) {
-                                    if (NetworkService.wifiEnabled)
-                                        NetworkService.scanWifi();
+                                controlCenterLoader.active = true;
+                                if (controlCenterLoader.item) {
+                                    controlCenterLoader.item.triggerScreen = root.screen;
+                                    controlCenterLoader.item.controlCenterVisible = !controlCenterLoader.item.controlCenterVisible;
+                                    if (controlCenterLoader.item.controlCenterVisible) {
+                                        if (NetworkService.wifiEnabled)
+                                            NetworkService.scanWifi();
+                                    }
                                 }
                             }
                         }

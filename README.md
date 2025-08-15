@@ -3,6 +3,7 @@
 <div align=center>
 
 ![GitHub last commit](https://img.shields.io/github/last-commit/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=9ccbfb)
+![GitHub stars](https://img.shields.io/github/stars/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=ffd700)
 ![GitHub License](https://img.shields.io/github/license/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=b9c8da)
 ![GitHub repo size](https://img.shields.io/github/repo-size/AvengeMedia/DankMaterialShell?style=for-the-badge&labelColor=101418&color=d3bfe6)
 
@@ -13,14 +14,22 @@ A modern Wayland desktop shell built with [Quickshell](https://quickshell.org/) 
 ## Screenshots
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/203a9678-c3b7-4720-bb97-853a511ac5c8" width="600" alt="DankMaterialShell Desktop" />
+<div style="max-width: 700px; margin: 0 auto;">
+
+https://github.com/user-attachments/assets/5ad934bb-e7aa-4c04-8d40-149181bd2d29
+
+</div>
 </div>
 
-<details><summary><strong>View More</strong></summary>
+<details><summary><strong>View More Screenshots</strong></summary>
 
 <br>
 
 <div align="center">
+
+### Desktop Overview
+
+<img src="https://github.com/user-attachments/assets/203a9678-c3b7-4720-bb97-853a511ac5c8" width="600" alt="DankMaterialShell Desktop" />
 
 ### Application Launcher
 
@@ -164,24 +173,24 @@ make && sudo make install
 
 ```bash
 # Arch Linux
-pacman -S cava wl-clipboard cliphist ddcutil brightnessctl
-paru -S matugen dgop-git
+pacman -S cava wl-clipboard cliphist brightnessctl
+paru -S matugen dgop
 
 # Fedora
-sudo dnf install cava wl-clipboard ddcutil brightnessctl
+sudo dnf install cava wl-clipboard brightnessctl
 sudo dnf copr enable wef/cliphist && sudo dnf install cliphist
 sudo dnf copr enable heus-sueh/packages && sudo dnf install matugen
 ```
 
 **What you get:**
 
-- `dgop-git`: Ability to have system resource widgets, process list modal, and temperature monitoring.
+- `dgop`: Ability to have system resource widgets, process list modal, and temperature monitoring.
 - `matugen`: Wallpaper-based dynamic theming
-- `ddcutil`: External monitor brightness control
-- `brightnessctl`: Laptop display brightness
+- `brightnessctl`: Backlight and LED brightness control
 - `wl-clipboard`: Required for copying various elements to clipboard.
 - `cava`: Audio visualizer
 - `cliphist`: Clipboard history
+- `gammastep`: Night mode support
 
 </details>
 
@@ -217,6 +226,9 @@ binds {
    Mod+M hotkey-overlay-title="Task Manager" {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "processlist" "toggle";
    }
+   Mod+N hotkey-overlay-title="Notification Center" {
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "notifications" "toggle";
+   }
    Mod+Comma hotkey-overlay-title="Settings" {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "settings" "toggle";
    }
@@ -236,10 +248,11 @@ binds {
       spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "audio" "micmute";
    }
    XF86MonBrightnessUp allow-when-locked=true {
-      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5";
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "increment" "5" "";
    }
+   // You can override the default device for e.g. keyboards by adding the device name to the last param
    XF86MonBrightnessDown allow-when-locked=true {
-      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "decrement" "5";
+      spawn "qs" "-c" "DankMaterialShell" "ipc" "call" "brightness" "decrement" "5" "";
    }
 }
 ```

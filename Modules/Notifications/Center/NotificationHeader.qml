@@ -6,6 +6,9 @@ import qs.Widgets
 
 Item {
   id: root
+  
+  property var keyboardController: null
+  property bool showSettings: false
 
   width: parent.width
   height: 32
@@ -68,15 +71,43 @@ Item {
     }
   }
 
-  Rectangle {
-    id: clearAllButton
-
-    width: 120
-    height: 28
-    radius: Theme.cornerRadius
+  Row {
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
-    visible: NotificationService.notifications.length > 0
+    spacing: Theme.spacingXS
+    
+    // Settings button
+    DankActionButton {
+      id: settingsButton
+      iconName: "settings"
+      iconColor: root.showSettings ? Theme.primary : Theme.surfaceText
+      buttonSize: 28
+      anchors.verticalCenter: parent.verticalCenter
+      onClicked: root.showSettings = !root.showSettings
+    }
+    
+    // Keyboard help button
+    DankActionButton {
+      id: helpButton
+      iconName: "help"
+      iconColor: keyboardController && keyboardController.showKeyboardHints ? Theme.primary : Theme.surfaceText
+      buttonSize: 28
+      visible: keyboardController !== null
+      anchors.verticalCenter: parent.verticalCenter
+      onClicked: {
+        if (keyboardController) {
+          keyboardController.showKeyboardHints = !keyboardController.showKeyboardHints
+        }
+      }
+    }
+    
+    Rectangle {
+      id: clearAllButton
+
+      width: 120
+      height: 28
+      radius: Theme.cornerRadius
+      visible: NotificationService.notifications.length > 0
     color: clearArea.containsMouse ? Qt.rgba(Theme.primary.r, Theme.primary.g,
                                              Theme.primary.b, 0.12) : Qt.rgba(
                                        Theme.surfaceVariant.r,
@@ -128,6 +159,7 @@ Item {
         duration: Theme.shortDuration
         easing.type: Theme.standardEasing
       }
+    }
     }
   }
 }
