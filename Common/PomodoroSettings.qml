@@ -18,7 +18,7 @@ Singleton {
     id: settingsFile
     path: StandardPaths.writableLocation(StandardPaths.ConfigLocation) + "/DankMaterialShell/pomodoro.json"
     blockLoading: true
-    blockWrites: true
+    blockWrites: false
     watchChanges: true
     onLoaded: parseSettings(settingsFile.text())
   }
@@ -42,13 +42,16 @@ Singleton {
   }
 
   function saveSettings() {
-    settingsFile.setText(JSON.stringify({
+    var _content = JSON.stringify({
       "workTime": workTime,
       "shortBreakTime": shortBreakTime,
       "longBreakTime": longBreakTime,
       "sessionsForLongBreak": sessionsForLongBreak,
       "targetSessions": targetSessions
-    }, null, 2))
+    }, null, 2)
+    console.log("PomodoroSettings: saveSettings called with content - " + _content)
+    settingsFile.setText(_content)
+    console.log("PomodoroSettings: setText() finished.")
   }
 
   function setWorkTime(time) {

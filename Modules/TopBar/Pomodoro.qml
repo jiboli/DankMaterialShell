@@ -11,6 +11,7 @@ StyledRect {
     property string section: "left" // or "right", depending on layout
     property var popupTarget: null
     property var parentScreen: null
+    property var pomodoroSettingsModal: null
 
     signal togglePomodoroPopup
 
@@ -55,6 +56,7 @@ StyledRect {
             color: Theme.surfaceText
             font.weight: Font.Medium
             text: PomodoroService.formatTime(PomodoroService.remainingTime)
+            visible: PomodoroService.currentState !== PomodoroService.stateIdle
         }
     }
 
@@ -72,6 +74,7 @@ StyledRect {
                 popupTarget.setTriggerPosition(relativeX,
                                                Theme.barHeight + Theme.spacingXS,
                                                width, section, currentScreen)
+                
             }
             togglePomodoroPopup()
         }

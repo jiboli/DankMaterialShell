@@ -135,6 +135,8 @@ ShellRoot {
         id: clipboardHistoryModalPopup
     }
 
+    
+
     IpcHandler {
         function open() {
             processListModalLoader.active = true;

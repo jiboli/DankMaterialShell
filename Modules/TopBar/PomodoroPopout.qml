@@ -16,7 +16,7 @@ PanelWindow {
     property real triggerWidth: 100
     property string triggerSection: "left"
     property var triggerScreen: null
-    property var settingsModal
+    
 
     function setTriggerPosition(x, y, width, section, screen) {
         triggerX = x;
@@ -139,128 +139,127 @@ PanelWindow {
                 }
             }
 
-            function openSettings() {
-                if (!settingsModal) {
-                    var component = Qt.createComponent("../../Modals/PomodoroSettingsModal.qml");
-                    if (component.status === Component.Ready) {
-                        settingsModal = component.createObject(root);
-                    }
-                }
-                if (settingsModal) {
-                    settingsModal.open();
-                }
-            }
-
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 16
+                spacing: 0
 
-                // Settings Button
-                Item {
-                    Layout.alignment: Qt.AlignRight
-                    width: 30
-                    height: 30
-
-                    DankIcon {
-                        id: settingsIcon
-                        anchors.centerIn: parent
-                        name: "settings"
-                        size: 20
-                        color: Theme.surfaceText
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: openSettings()
-                    }
+                DankTabBar {
+                    id: tabBar
+                    Layout.fillWidth: true
+                    Layout.topMargin: 8
+                    Layout.leftMargin: 8
+                    Layout.rightMargin: 8
+                    model: [{ text: "Pomodoro" }, { text: "Settings" }]
                 }
 
-                DankCircularProgress {
-                    id: progressBar
-                    Layout.preferredWidth: 174
-                    Layout.alignment: Qt.AlignHCenter
-                    Layout.preferredHeight: progressBar.width
-                    Layout.topMargin: 10
-                    strokeWidth: 12
-                    color: Theme.primary
-                    backgroundColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
-                    value: PomodoroService.remainingTime > 0 ? (PomodoroService.remainingTime / getTotalTime()) : 0
+                StackLayout {
+                    id: stack
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    currentIndex: tabBar.currentIndex
 
-                    content: [
-                        ColumnLayout {
-                            width: parent.width
-                            height: parent.height
-                            spacing: 10
+                    // Tab 1: Pomodoro View
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.margins: 16
 
-                            Item {
-                                Layout.fillHeight: true
-                            }
+                        DankCircularProgress {
+                            id: progressBar
+                            Layout.preferredWidth: 174
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.preferredHeight: progressBar.width
+                            Layout.topMargin: 10
+                            strokeWidth: 12
+                            color: Theme.primary
+                            backgroundColor: Qt.rgba(Theme.primary.r, Theme.primary.g, Theme.primary.b, 0.2)
+                            value: PomodoroService.remainingTime > 0 ? (PomodoroService.remainingTime / getTotalTime()) : 0
 
-                            DankIcon {
-                                id: stateIcon
-                                Layout.alignment: Qt.AlignHCenter
-                                size: 48
-                                color: Theme.primary
-                                name: {
-                                    switch (PomodoroService.currentState) {
-                                    case PomodoroService.stateWork:
-                                        return "psychology";
-                                    case PomodoroService.stateShortBreak:
-                                    case PomodoroService.stateLongBreak:
-                                        return "coffee";
-                                    default:
-                                        return "psychology";
+                            content: [
+                                ColumnLayout {
+                                    width: parent.width
+                                    height: parent.height
+                                    spacing: 10
+
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+
+                                    DankIcon {
+                                        id: stateIcon
+                                        Layout.alignment: Qt.AlignHCenter
+                                        size: 48
+                                        color: Theme.primary
+                                        name: {
+                                            switch (PomodoroService.currentState) {
+                                            case PomodoroService.stateWork:
+                                                return "psychology";
+                                            case PomodoroService.stateShortBreak:
+                                            case PomodoroService.stateLongBreak:
+                                                return "coffee";
+                                            default:
+                                                return "psychology";
+                                            }
+                                        }
+                                    }
+
+                                    StyledText {
+                                        id: timeText
+                                        Layout.alignment: Qt.AlignHCenter
+                                        font.pixelSize: 24
+                                        font.weight: Font.Light
+                                        color: Theme.surfaceText
+                                        text: PomodoroService.formatTime(PomodoroService.remainingTime)
+                                    }
+
+                                    Item {
+                                        Layout.fillHeight: true
                                     }
                                 }
+                            ]
+                        }
+
+                        // Control Buttons
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.topMargin: 20
+
+                            DankActionButton {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 50
+                                iconName: "replay"
+                                onClicked: PomodoroService.reset()
                             }
 
-                            StyledText {
-                                id: timeText
-                                Layout.alignment: Qt.AlignHCenter
-                                font.pixelSize: 24
-                                font.weight: Font.Light
-                                color: Theme.surfaceText
-                                text: PomodoroService.formatTime(PomodoroService.remainingTime)
+                            DankActionButton {
+                                Layout.fillWidth: true
+                                Layout.preferredWidth: 80
+                                Layout.preferredHeight: 60
+                                Layout.leftMargin: 10
+                                Layout.rightMargin: 10
+                                iconName: PomodoroService.isRunning ? "pause" : "play_arrow"
+                                onClicked: PomodoroService.playPause()
                             }
 
-                            Item {
-                                Layout.fillHeight: true
+                            DankActionButton {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 50
+                                iconName: "skip_next"
+                                onClicked: PomodoroService.skip()
                             }
                         }
-                    ]
-                }
-
-                // Control Buttons
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.topMargin: 20
-
-                    DankActionButton {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        iconName: "replay"
-                        onClicked: PomodoroService.reset()
                     }
 
-                    DankActionButton {
+                    // Tab 2: Settings View
+                    PomodoroSettingsContent {
                         Layout.fillWidth: true
-                        Layout.preferredWidth: 80
-                        Layout.preferredHeight: 60
-                        Layout.leftMargin: 10
-                        Layout.rightMargin: 10
-                        iconName: PomodoroService.isRunning ? "pause" : "play_arrow"
-                        onClicked: PomodoroService.playPause()
-                    }
-
-                    DankActionButton {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 50
-                        iconName: "skip_next"
-                        onClicked: PomodoroService.skip()
+                        Layout.topMargin: 16
+                        Layout.leftMargin: 16
+                        Layout.rightMargin: 16
                     }
                 }
             }
+
 
             Connections {
                 target: PomodoroService

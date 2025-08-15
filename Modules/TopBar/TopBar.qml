@@ -22,6 +22,7 @@ PanelWindow {
     readonly property int notificationCount: NotificationService.notifications.length
     property bool autoHide: SettingsData.topBarAutoHide
     property bool reveal: !autoHide || topBarMouseArea.containsMouse
+    property var pomodoroSettingsModal: null
 
     screen: modelData
     implicitHeight: Theme.barHeight - 4
