@@ -29,6 +29,7 @@ Singleton {
   property bool qtThemingEnabled: false
   property bool systemThemeGenerationInProgress: false
   property var matugenColors: ({})
+  property string matugenJson: ""
   property bool extractionRequested: false
   property int colorUpdateTrigger: 0
   property string lastWallpaperTimestamp: ""
@@ -145,28 +146,36 @@ Singleton {
       id: matugenCollector
 
       onStreamFinished: {
-        if (!matugenCollector.text) {
+        const out = matugenCollector.text
+        const startIndex = out.indexOf('{')
+        const endIndex = out.lastIndexOf('}')
+        let jsonStringOnly = ""
+        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+            jsonStringOnly = out.substring(startIndex, endIndex + 1)
+        }
+        if (!jsonStringOnly.length) {
           ToastService.wallpaperErrorStatus = "error"
           ToastService.showError("Wallpaper Processing Failed: Empty JSON extracted from matugen output.")
           return
         }
         try {
-          root.matugenColors = JSON.parse(matugenCollector.text)
+          root.matugenJson = jsonStringOnly
+          root.matugenColors = JSON.parse(jsonStringOnly)
           root.colorsUpdated()
           generateAppConfigs()
           ToastService.clearWallpaperError()
         } catch (e) {
           ToastService.wallpaperErrorStatus = "error"
-          ToastService.showError("Wallpaper processing failed (JSON parse error after extraction)")
+          const stderr = matugenErr.text
+          const msg = "Wallpaper processing failed (JSON parse error after extraction)"
+              + (stderr ? `: ${stderr}` : ` with output: ${jsonStringOnly}`)
+          ToastService.showError(msg)
         }
       }
     }
 
-    onExited: code => {
-      if (code !== 0) {
-        ToastService.wallpaperErrorStatus = "error"
-        ToastService.showError("Matugen command failed with exit code " + code)
-      }
+    stderr: StdioCollector {
+      id: matugenErr
     }
   }
 
