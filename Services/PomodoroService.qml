@@ -1,9 +1,10 @@
+pragma ComponentBehavior: Bound
 pragma Singleton
 
 import QtQuick
 import qs.Common
 
-Item {
+Singleton {
     id: root
 
     // Enum for states

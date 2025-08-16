@@ -100,3 +100,4 @@ go.work.sum
 Common/qmldir
 Services/qmldir
 Widgets/qmldir
+qmldir
