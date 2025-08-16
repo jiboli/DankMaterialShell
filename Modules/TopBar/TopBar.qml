@@ -302,6 +302,8 @@ PanelWindow {
                             return true;
                         case "pomodoro":
                             return true;
+                        case "idleInhibitor":
+                            return true;
                         case "spacer":
                             return true;
                         case "separator":
@@ -347,6 +349,8 @@ PanelWindow {
                             return controlCenterButtonComponent;
                         case "pomodoro":
                             return pomodoroComponent;
+                        case "idleInhibitor":
+                            return idleInhibitorComponent;
                         case "spacer":
                             return spacerComponent;
                         case "separator":
@@ -959,6 +963,22 @@ PanelWindow {
                             onTogglePomodoroPopup: {
                                 pomodoroPopout.pomodoroPopoutVisible = !pomodoroPopout.pomodoroPopoutVisible;
                             }
+                        }
+                    }
+                    Component {
+                        id: idleInhibitorComponent
+
+                        IdleInhibitor {
+                            section: {
+                                if (parent && parent.parent === leftSection)
+                                    return "left";
+                                if (parent && parent.parent === rightSection)
+                                    return "right";
+                                if (parent && parent.parent === centerSection)
+                                    return "center";
+                                return "right";
+                            }
+                            parentScreen: root.screen
                         }
                     }
 

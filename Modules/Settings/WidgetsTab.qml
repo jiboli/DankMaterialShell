@@ -114,6 +114,12 @@ Item {
       "icon": "battery_std",
       "enabled": true
     }, {
+      "id": "idleInhibitor",
+      "text": "Idle Inhibitor",
+      "description": "Prevent screen timeout",
+      "icon": "motion_sensor_active",
+      "enabled": true
+    }, {
       "id": "spacer",
       "text": "Spacer",
       "description": "Customizable empty space",
